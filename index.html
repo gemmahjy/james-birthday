@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Where Should James Go? & Other Word Games</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #111827;
+            margin-bottom: 20px;
+        }
+
+        .games-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .game-frame {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            padding: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        iframe {
+            width: 100%;
+            height: 600px; /* Adjust height as necessary */
+            border: none;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Happy Birhtday James</h1>
+    <div class="games-container">
+        <div class="game-frame">
+            <h2>Quordle</h2>
+            <style>
+                /* Global body styling */
+                body {
+                    font-family: 'Arial', sans-serif;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: flex-start;
+                    min-height: 100vh;
+                    margin: 0;
+                    background-color: #f4f4f9;
+                    padding-top: 20px;
+                }
+                
+                /* Header/title styling similar to Quordle */
+                h1 {
+                    font-size: 24px;
+                    margin-bottom: 20px;
+                    color: #111827;
+                    text-align: center;
+                    font-weight: bold;
+                    background-color: #d3d6da;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                }
+        
+                /* Game container styling */
+                .game-container {
+                    display: flex;
+                    gap: 10px;
+                    flex-wrap: wrap;
+                    justify-content: center;
+                }
+        
+                /* Guess grid styling */
+                .guess-grid {
+                    display: grid;
+                    grid-template-columns: repeat(5, 40px);
+                    gap: 5px;
+                }
+        
+                /* Individual cell styling */
+                .guess-cell {
+                    width: 40px;
+                    height: 40px;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-weight: bold;
+                    color: white;
+                    border-radius: 4px;
+                    background-color: #d3d6da;
+                }
+        
+                /* Colors for guess states */
+                .correct {
+                    background-color: #6aaa64;
+                }
+                .diff {
+                    background-color: #c9b458;
+                }
+                .none {
+                    background-color: #787c7e;
+                }
+        
+                /* Styling for input and button */
+                #guessInput {
+                    margin-top: 20px;
+                    padding: 8px;
+                    font-size: 16px;
+                    text-align: center;
+                    border-radius: 4px;
+                    border: 1px solid #ccc;
+                    outline: none;
+                }
+                button {
+                    padding: 8px 16px;
+                    font-size: 16px;
+                    margin-left: 10px;
+                    cursor: pointer;
+                    background-color: #6aaa64;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                }
+            </style>
+            <!-- Game grid container -->
+            <div class="game-container">
+                <div class="guess-grid" id="grid1"></div>
+                <div class="guess-grid" id="grid2"></div>
+                <div class="guess-grid" id="grid3"></div>
+                <div class="guess-grid" id="grid4"></div>
+            </div>
+        
+            <!-- Input and Submit button -->
+            <div>
+                <input type="text" id="guessInput" maxlength="5" placeholder="Enter 5-letter word">
+                <button onclick="submitGuess()">Submit Guess</button>
+            </div>
+        
+            <script>
+                const guessGrids = [
+                    document.getElementById('grid1'),
+                    document.getElementById('grid2'),
+                    document.getElementById('grid3'),
+                    document.getElementById('grid4')
+                ];
+        
+                const correctAnswers = ["SEVEN", "CLOCK", "WANDS", "WORTH"];
+                const maxGuesses = 9;
+                const guesses = [];
+        
+                // Initialize grids with empty cells
+                function initializeGrids() {
+                    guessGrids.forEach(grid => {
+                        grid.innerHTML = ''; // Clear existing content
+                        for (let i = 0; i < maxGuesses * 5; i++) {
+                            const cell = document.createElement('div');
+                            cell.classList.add('guess-cell');
+                            grid.appendChild(cell);
+                        }
+                    });
+                }
+        
+                // Check each letter's state in the guess
+                function checkGuessState(guess, answer) {
+                    const result = Array(5).fill("none");
+                    const guessArray = guess.split("");
+                    const answerArray = answer.split("");
+        
+                    // Mark correct letters
+                    for (let i = 0; i < 5; i++) {
+                        if (guessArray[i] === answerArray[i]) {
+                            result[i] = "correct";
+                            guessArray[i] = null; // Remove letter to avoid duplicate matching
+                            answerArray[i] = null;
+                        }
+                    }
+        
+                    // Mark letters in wrong position
+                    for (let i = 0; i < 5; i++) {
+                        if (guessArray[i] && answerArray.includes(guessArray[i])) {
+                            result[i] = "diff";
+                            answerArray[answerArray.indexOf(guessArray[i])] = null;
+                        }
+                    }
+                    return result;
+                }
+        
+                // Display the guess in the grids
+                function displayGuess(guess) {
+                    for (let i = 0; i < correctAnswers.length; i++) {
+                        const startIndex = (guesses.length - 1) * 5;
+                        const states = checkGuessState(guess, correctAnswers[i]);
+        
+                        for (let j = 0; j < 5; j++) {
+                            const cell = guessGrids[i].children[startIndex + j];
+                            cell.textContent = guess[j];
+                            cell.classList.add(states[j]);
+                        }
+                    }
+                }
+        
+                // Process the guess input
+                function submitGuess() {
+                    const guessInput = document.getElementById('guessInput');
+                    const guess = guessInput.value.trim().toUpperCase();
+                    guessInput.value = '';
+        
+                    if (guess.length !== 5) {
+                        alert("Please enter a 5-letter word.");
+                        return;
+                    }
+        
+                    if (!/^[A-Z]+$/.test(guess)) {
+                        alert("Only letters are allowed.");
+                        return;
+                    }
+        
+                    guesses.push(guess);
+                    displayGuess(guess);
+        
+                    const isGameComplete = correctAnswers.every((word, index) =>
+                        guesses.some(g => g === word)
+                    );
+        
+                    if (isGameComplete) {
+                        alert("Congratulations! You've guessed all words.");
+                        guessInput.disabled = true;
+                    } else if (guesses.length >= maxGuesses) {
+                        alert("Game over! You've used all your guesses.");
+                        guessInput.disabled = true;
+                    }
+                }
+        
+                // Initialize the grids on page load
+                initializeGrids();
+            </script>
+        </div> 
+        
+        <div class="game-frame">
+            <h2>Wordle</h2>
+            <iframe src="https://mywordle.strivemath.com/?word=hsruy" height="800"></iframe>
+        </div>
+
+        <div class="game-frame">
+            <h2>Connections</h2>
+            <iframe src="https://connections.swellgarfo.com/game/-OBXGOm2QJejP16oJcX-" height="800"></iframe>
+        </div>
+
+        <div class="game-frame">
+            <h2>Strands</h2>
+<p><a href="https://customstrandsnyt.com/play/-SliceSliceBaby/" target="_blank">
+    <img src="strands.png" alt="Custom Strands Game" width="300">
+</a></p>
+    </div>
+    
+</body>
+</html>
